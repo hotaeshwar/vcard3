@@ -1120,7 +1120,7 @@ const BusinessCard = () => {
           {/* Footer */}
           <div className="bg-yellow-600 px-4 sm:px-6 py-3 sm:py-4 text-center">
             <div className="text-white font-semibold text-base sm:text-lg md:text-xl">
-              Pranab Takshnavi
+              Pranab Singh
             </div>
           </div>
         </div>

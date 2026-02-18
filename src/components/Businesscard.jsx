@@ -688,7 +688,7 @@ const BusinessCard = () => {
     </div>
     
     <div class="footer">
-      Pranab Takshnavi
+      Building India Digital
     </div>
   </div>
 

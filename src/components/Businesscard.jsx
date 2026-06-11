@@ -542,6 +542,9 @@ const BusinessCard = () => {
       box-shadow: 0 6px 20px rgba(255, 211, 0, 0.4);
       background: #CCA600;
     }
+    .btn-full {
+      grid-column: span 2;
+    }
     .footer {
       text-align: center;
       padding: 15px;
@@ -678,13 +681,14 @@ const BusinessCard = () => {
           Call Now
         </a>
         ` : ''}
-        ${formData.mapLink ? `
-        <a href="${formData.mapLink}" target="_blank" class="btn">
+        ${formData.website ? `
+        <a href="https://${formData.website.replace(/https?:\/\//i, '')}" target="_blank" class="btn btn-full">
           <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-            <path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z"/>
-            <circle cx="12" cy="10" r="3"/>
+            <circle cx="12" cy="12" r="10"/>
+            <line x1="2" y1="12" x2="22" y2="12"/>
+            <path d="M12 2a15.3 15.3 0 0 1 4 10 15.3 15.3 0 0 1-4 10 15.3 15.3 0 0 1-4-10 15.3 15.3 0 0 1 4-10z"/>
           </svg>
-          View Location
+          Visit Website
         </a>
         ` : ''}
       </div>

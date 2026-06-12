@@ -313,17 +313,56 @@ const BusinessCard = () => {
     }));
   };
 
+  const compressImage = (file, callback) => {
+    const reader = new FileReader();
+    reader.onload = (e) => {
+      const img = new Image();
+      img.onload = () => {
+        const canvas = document.createElement('canvas');
+        const MAX_WIDTH = 300;
+        const MAX_HEIGHT = 300;
+        let width = img.width;
+        let height = img.height;
+
+        if (width > height) {
+          if (width > MAX_WIDTH) {
+            height *= MAX_WIDTH / width;
+            width = MAX_WIDTH;
+          }
+        } else {
+          if (height > MAX_HEIGHT) {
+            width *= MAX_HEIGHT / height;
+            height = MAX_HEIGHT;
+          }
+        }
+
+        canvas.width = width;
+        canvas.height = height;
+        const ctx = canvas.getContext('2d');
+        ctx.drawImage(img, 0, 0, width, height);
+
+        // Convert to base64 jpeg with 0.7 quality
+        const dataUrl = canvas.toDataURL('image/jpeg', 0.7);
+        callback(dataUrl);
+      };
+      img.onerror = () => {
+        // Fallback to original base64 if image load fails
+        callback(e.target.result);
+      };
+      img.src = e.target.result;
+    };
+    reader.readAsDataURL(file);
+  };
+
   const handlePhotoChange = (event) => {
     const file = event.target.files[0];
     if (file) {
-      const reader = new FileReader();
-      reader.onload = (e) => {
+      compressImage(file, (compressedBase64) => {
         setTempFormData(prev => ({
           ...prev,
-          photo: e.target.result
+          photo: compressedBase64
         }));
-      };
-      reader.readAsDataURL(file);
+      });
     }
   };
 
@@ -789,6 +828,7 @@ const BusinessCard = () => {
                     onError={handleImageError}
                   />
                   <button 
+                    type="button"
                     onClick={() => fileInputRef.current?.click()}
                     className="absolute bottom-0 right-0 bg-brand-navy text-brand-yellow p-1.5 sm:p-2 rounded-full shadow-lg hover:bg-brand-yellow hover:text-brand-navy transition-all duration-200 cursor-pointer"
                   >

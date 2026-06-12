@@ -30,7 +30,6 @@ const BusinessCard = () => {
   });
 
   const [isEditModalOpen, setIsEditModalOpen] = useState(false);
-  const [isShareModalOpen, setIsShareModalOpen] = useState(false);
   const [tempFormData, setTempFormData] = useState({});
   const [notification, setNotification] = useState(null);
   const [loading, setLoading] = useState(false);
@@ -133,20 +132,6 @@ const BusinessCard = () => {
       <circle cx="12" cy="12" r="10"/>
       <line x1="2" y1="12" x2="22" y2="12"/>
       <path d="M12 2a15.3 15.3 0 0 1 4 10 15.3 15.3 0 0 1-4 10 15.3 15.3 0 0 1-4-10 15.3 15.3 0 0 1 4-10z"/>
-    </svg>
-  );
-
-  const CopyIcon = ({ size = 20, color = "#ffffff" }) => (
-    <svg width={size} height={size} viewBox="0 0 24 24" fill="none" stroke={color} strokeWidth="2">
-      <rect x="9" y="9" width="13" height="13" rx="2" ry="2"/>
-      <path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"/>
-    </svg>
-  );
-
-  const CloseIcon = ({ size = 20, color = "#ffffff" }) => (
-    <svg width={size} height={size} viewBox="0 0 24 24" fill="none" stroke={color} strokeWidth="2">
-      <line x1="18" y1="6" x2="6" y2="18"/>
-      <line x1="6" y1="6" x2="18" y2="18"/>
     </svg>
   );
 
@@ -477,77 +462,7 @@ const BusinessCard = () => {
     }
   };
 
-  // Share the contact file (.vcf) directly (ideal for WhatsApp contact badges)
-  const shareVCF = async () => {
-    try {
-      showNotification('Preparing contact card...', 'info');
-      
-      const currentPhoto = getImageSource(formData.photo);
-      let base64Photo = null;
-      try {
-        base64Photo = await getImageBase64(currentPhoto);
-      } catch (imgErr) {
-        console.error('Failed to get base64 image for share:', imgErr);
-      }
 
-      const vCardData = generateVCardData(base64Photo);
-      const file = new File([vCardData], `${formData.name.replace(/\s+/g, '_')}.vcf`, { type: 'text/vcard' });
-      
-      if (navigator.share && navigator.canShare && navigator.canShare({ files: [file] })) {
-        await navigator.share({
-          files: [file],
-          title: `${formData.name} Contact`,
-          text: `Here is the contact card of ${formData.name}.`
-        });
-        showNotification('Contact shared successfully!', 'success');
-      } else {
-        // Fallback: download
-        saveContact();
-        showNotification('Sharing files not supported. Downloading contact file instead.', 'info');
-      }
-    } catch (error) {
-      console.error('Error sharing contact card:', error);
-      // Fallback: download
-      saveContact();
-    }
-  };
-
-  // Share the website link
-  const shareLink = async () => {
-    const shareUrl = window.location.href;
-    if (navigator.share) {
-      try {
-        await navigator.share({
-          title: `${formData.name} - Digital Business Card`,
-          text: `Check out ${formData.name}'s digital business card!`,
-          url: shareUrl
-        });
-        showNotification('Link shared successfully!', 'success');
-      } catch (err) {
-        console.log('Error sharing link:', err);
-      }
-    } else {
-      // Fallback: copy to clipboard
-      copyToClipboard();
-    }
-  };
-
-  // Pre-filled WhatsApp message sharing the website link
-  const shareToWhatsApp = () => {
-    const shareText = encodeURIComponent(`Hi! Here is the digital business card for ${formData.name}. Tap the link to view: ${window.location.href}`);
-    window.open(`https://api.whatsapp.com/send?text=${shareText}`, '_blank');
-  };
-
-  // Copy card link to clipboard
-  const copyToClipboard = async () => {
-    try {
-      await navigator.clipboard.writeText(window.location.href);
-      showNotification('Link copied to clipboard!', 'success');
-    } catch (err) {
-      console.error('Failed to copy link:', err);
-      showNotification('Could not copy link. Please copy manually.', 'error');
-    }
-  };
 
   const createInteractiveCard = async () => {
     if (loading) return;
@@ -1124,109 +1039,6 @@ const BusinessCard = () => {
         </div>
       )}
 
-      {/* Share Modal */}
-      {isShareModalOpen && (
-        <div className="fixed inset-0 bg-black/80 flex items-center justify-center z-50 p-3 sm:p-4 backdrop-blur-xs animate-fade-in">
-          <div className="bg-brand-navy rounded-2xl shadow-2xl w-full max-w-xs sm:max-w-sm border border-brand-yellow/30 overflow-hidden transform transition-all duration-300 scale-100">
-            {/* Header */}
-            <div className="bg-brand-navy-dark px-4 sm:px-6 py-4 border-b-2 border-brand-yellow flex justify-between items-center">
-              <h2 className="text-base sm:text-lg font-extrabold text-brand-yellow tracking-wide">Share Contact</h2>
-              <button 
-                onClick={() => setIsShareModalOpen(false)}
-                className="text-gray-400 hover:text-brand-yellow transition-colors duration-200 cursor-pointer"
-              >
-                <CloseIcon size={18} />
-              </button>
-            </div>
-            
-            {/* Options list */}
-            <div className="p-4 sm:p-6 space-y-3">
-              {/* WhatsApp direct share */}
-              <button
-                onClick={() => { shareToWhatsApp(); setIsShareModalOpen(false); }}
-                className="w-full flex items-center gap-3 p-3 rounded-xl bg-brand-navy-light border border-brand-navy-light/60 text-white font-bold text-sm sm:text-base cursor-pointer transition-all duration-200 hover:bg-brand-yellow hover:text-brand-navy group"
-              >
-                <div className="bg-brand-navy-dark p-2 rounded-full border border-brand-yellow flex items-center justify-center group-hover:bg-brand-navy">
-                  <WhatsAppIcon size={18} color="#FFD300" />
-                </div>
-                <div className="text-left flex-1">
-                  <div className="font-bold">Share on WhatsApp</div>
-                  <div className="text-xs text-gray-400 font-normal group-hover:text-brand-navy/80">Send website link to WhatsApp chat</div>
-                </div>
-              </button>
-
-              {/* Share VCF file directly */}
-              <button
-                onClick={() => { shareVCF(); setIsShareModalOpen(false); }}
-                className="w-full flex items-center gap-3 p-3 rounded-xl bg-brand-navy-light border border-brand-navy-light/60 text-white font-bold text-sm sm:text-base cursor-pointer transition-all duration-200 hover:bg-brand-yellow hover:text-brand-navy group"
-              >
-                <div className="bg-brand-navy-dark p-2 rounded-full border border-brand-yellow flex items-center justify-center group-hover:bg-brand-navy">
-                  <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#FFD300" strokeWidth="2">
-                    <path d="M19 21v-2a4 4 0 0 0-4-4H9a4 4 0 0 0-4 4v2"/>
-                    <circle cx="12" cy="7" r="4"/>
-                  </svg>
-                </div>
-                <div className="text-left flex-1">
-                  <div className="font-bold">Share Contact File (.vcf)</div>
-                  <div className="text-xs text-gray-400 font-normal group-hover:text-brand-navy/80">Send native contact card (one-tap save)</div>
-                </div>
-              </button>
-
-              {/* Share Link (native browser share) */}
-              <button
-                onClick={() => { shareLink(); setIsShareModalOpen(false); }}
-                className="w-full flex items-center gap-3 p-3 rounded-xl bg-brand-navy-light border border-brand-navy-light/60 text-white font-bold text-sm sm:text-base cursor-pointer transition-all duration-200 hover:bg-brand-yellow hover:text-brand-navy group"
-              >
-                <div className="bg-brand-navy-dark p-2 rounded-full border border-brand-yellow flex items-center justify-center group-hover:bg-brand-navy">
-                  <ShareIcon size={18} color="#FFD300" />
-                </div>
-                <div className="text-left flex-1">
-                  <div className="font-bold">Share Card Link</div>
-                  <div className="text-xs text-gray-400 font-normal group-hover:text-brand-navy/80">Share using system share tray</div>
-                </div>
-              </button>
-
-              {/* Copy Link to Clipboard */}
-              <button
-                onClick={() => { copyToClipboard(); setIsShareModalOpen(false); }}
-                className="w-full flex items-center gap-3 p-3 rounded-xl bg-brand-navy-light border border-brand-navy-light/60 text-white font-bold text-sm sm:text-base cursor-pointer transition-all duration-200 hover:bg-brand-yellow hover:text-brand-navy group"
-              >
-                <div className="bg-brand-navy-dark p-2 rounded-full border border-brand-yellow flex items-center justify-center group-hover:bg-brand-navy">
-                  <CopyIcon size={18} color="#FFD300" />
-                </div>
-                <div className="text-left flex-1">
-                  <div className="font-bold">Copy Link</div>
-                  <div className="text-xs text-gray-400 font-normal group-hover:text-brand-navy/80">Copy profile link to clipboard</div>
-                </div>
-              </button>
-
-              {/* Download Contact Card file */}
-              <button
-                onClick={() => { saveContact(); setIsShareModalOpen(false); }}
-                className="w-full flex items-center gap-3 p-3 rounded-xl bg-brand-navy-light border border-brand-navy-light/60 text-white font-bold text-sm sm:text-base cursor-pointer transition-all duration-200 hover:bg-brand-yellow hover:text-brand-navy group"
-              >
-                <div className="bg-brand-navy-dark p-2 rounded-full border border-brand-yellow flex items-center justify-center group-hover:bg-brand-navy">
-                  <SaveIcon size={18} color="#FFD300" />
-                </div>
-                <div className="text-left flex-1">
-                  <div className="font-bold">Download VCF Card</div>
-                  <div className="text-xs text-gray-400 font-normal group-hover:text-brand-navy/80">Download contact file directly</div>
-                </div>
-              </button>
-            </div>
-            
-            {/* Footer */}
-            <div className="bg-brand-navy-dark p-3 text-center border-t border-brand-navy-light/40">
-              <button
-                onClick={() => setIsShareModalOpen(false)}
-                className="px-6 py-2 text-xs sm:text-sm bg-brand-navy-light text-gray-300 font-bold rounded-lg border border-brand-navy-light/60 hover:bg-brand-navy transition-colors duration-200 cursor-pointer"
-              >
-                Close
-              </button>
-            </div>
-          </div>
-        </div>
-      )}
 
       {/* Main Card Container */}
       <div className="w-full max-w-[340px] mx-auto animate-fade-in">
@@ -1472,11 +1284,12 @@ const BusinessCard = () => {
                   Edit Card
                 </button>
                 <button 
-                  onClick={() => setIsShareModalOpen(true)}
-                  className="bg-brand-navy-light text-white border border-brand-navy-light/60 px-3 sm:px-4 py-2 sm:py-3 rounded-xl text-sm sm:text-base font-bold cursor-pointer transition-all duration-200 flex items-center justify-center gap-2 hover:shadow-md hover:bg-brand-navy"
+                  onClick={createInteractiveCard}
+                  disabled={loading}
+                  className="bg-brand-navy-light text-white border border-brand-navy-light/60 px-3 sm:px-4 py-2 sm:py-3 rounded-xl text-sm sm:text-base font-bold cursor-pointer transition-all duration-200 flex items-center justify-center gap-2 hover:shadow-md hover:bg-brand-navy disabled:opacity-75 disabled:cursor-not-allowed"
                 >
                   <ShareIcon size={14} className="sm:w-4 sm:h-4" color="#ffffff" />
-                  Share Card
+                  {loading ? 'Sharing...' : 'Share Card'}
                 </button>
               </div>
             </div>
